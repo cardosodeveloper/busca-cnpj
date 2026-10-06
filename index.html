@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Busca de CNPJ por domínio | Case Técnico Benefícios S/A</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="vendor/xlsx.full.min.js" defer></script>
+  <script src="js/dominios.js" defer></script>
+  <script src="js/fontes.js" defer></script>
+  <script src="js/receita.js" defer></script>
+  <script src="js/exportar.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="selo">Case Técnico Benefícios S/A</span>
+      <h1>Busca de CNPJ por domínio</h1>
+      <p>Carregue uma planilha com domínios ou sites e receba CNPJ, razão social, CNAE e cluster de cada empresa, prontos para exportar.</p>
+    </div>
+    <p class="case-nota"><strong>Material desenvolvido para o Case Técnico</strong> do processo seletivo de Analista de Inteligência Comercial Sênior da Benefícios S/A. Consulta apenas fontes públicas, direto do seu navegador.</p>
+  </header>
+
+  <main class="pagina">
+    <div class="passos">
+      <section class="passo">
+        <h2><span class="num">1</span>Carregar a planilha</h2>
+        <label class="drop" id="drop">
+          <input type="file" id="arqPlanilha" accept=".xlsx,.xls,.csv">
+          <strong>Arraste o Excel aqui</strong>
+          <span>ou clique para escolher (.xlsx, .xls ou .csv)</span>
+        </label>
+        <p class="nota" id="arqNome">Aceita a aba Leads do Painel de Controle: a coluna "Domínio" é reconhecida sozinha.</p>
+      </section>
+
+      <section class="passo">
+        <h2><span class="num">2</span>Escolher a coluna</h2>
+        <label class="campo"><span>Aba</span><select id="selAba" disabled></select></label>
+        <label class="campo"><span>Coluna com domínio, site ou e-mail</span><select id="selColuna" disabled></select></label>
+        <p class="nota" id="resumoEntrada">Nenhuma planilha carregada.</p>
+      </section>
+
+      <section class="passo">
+        <h2><span class="num">3</span>Fontes de consulta</h2>
+        <label class="interruptor"><input type="checkbox" id="usarRdap" checked> Registro.br: titular de domínios .br</label>
+        <label class="interruptor"><input type="checkbox" id="usarApi" checked> BrasilAPI e Minha Receita: dados do CNPJ</label>
+        <div class="base-local">
+          <label class="secundario arquivo">Abrir base local da Receita<input type="file" id="arqBase" accept=".parquet,.csv"></label>
+          <p class="nota" id="baseInfo">Opcional. Acha CNPJ de domínios que não são .br pelo e-mail cadastrado na Receita.</p>
+        </div>
+        <details class="ajustes">
+          <summary>Ajustes</summary>
+          <label class="campo"><span>Intervalo entre consultas a cada serviço (ms)</span><input type="number" id="intervalo" min="300" step="100" value="1200"></label>
+          <p class="nota">Aumente se aparecer aviso de limite de consultas.</p>
+        </details>
+      </section>
+    </div>
+
+    <div class="acoes-busca">
+      <button class="primario" id="btnBuscar" disabled>Buscar CNPJs</button>
+      <button class="secundario" id="btnPausar" hidden>Pausar</button>
+      <button class="fantasma" id="btnParar" hidden>Parar</button>
+      <div class="progresso" id="progresso" hidden>
+        <div class="barra-prog"><i id="barra"></i></div>
+        <p class="nota" id="progTexto"></p>
+      </div>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+
+    <section id="resultado" hidden>
+      <h2>Resultado</h2>
+      <div class="kpis" id="kpis"></div>
+      <div class="filtros-linha">
+        <div class="chips" id="filtros" role="group" aria-label="Filtrar resultado">
+          <button type="button" class="chip" data-filtro="todos" aria-pressed="true">Todos</button>
+          <button type="button" class="chip" data-filtro="encontrados" aria-pressed="false">Encontrados</button>
+          <button type="button" class="chip" data-filtro="revisar" aria-pressed="false">Revisar</button>
+          <button type="button" class="chip" data-filtro="nao" aria-pressed="false">Não encontrados</button>
+        </div>
+        <input id="busca" placeholder="Filtrar por domínio, nome ou CNPJ" autocomplete="off">
+      </div>
+      <div class="tabela rolavel" id="tabela"></div>
+      <p class="nota"><strong>Confiança:</strong> alta quando o CNPJ veio do titular do domínio e o nome da empresa confere com o domínio; média quando o CNPJ veio do titular mas o nome não confere (pode ser agência ou holding) ou quando veio do e-mail cadastrado na Receita; baixa quando várias empresas usam o mesmo domínio de e-mail.</p>
+      <div class="botoes">
+        <button class="primario" data-exportar="xlsx">Baixar Excel</button>
+        <button class="secundario" data-exportar="csv_br">CSV (Excel BR)</button>
+        <button class="fantasma" data-exportar="csv">CSV padrão</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p><strong>Case Técnico Benefícios S/A.</strong> Fontes públicas: Registro.br (RDAP), dados abertos do CNPJ da Receita Federal via BrasilAPI e Minha Receita. A planilha e a base local são lidas só no seu navegador. Dados B2B: registre a fonte e respeite o opt-out na cadência.</p>
+  </footer>
+</body>
+</html>
